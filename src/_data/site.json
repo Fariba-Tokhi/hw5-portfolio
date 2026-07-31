@@ -1,0 +1,17 @@
+{
+  "title": "Sarah Mitchell - Web Developer & Accessibility Advocate",
+  "author": "Sarah Mitchell",
+  "year": "2026",
+  "url": "https://your-hw5-site.netlify.app",
+  "email": "sarah@example.com",
+  "github": "https://github.com/Fariba-Tokhi",
+  "linkedin": "https://linkedin.com/in/sarahmitchell",
+  "twitter": "https://twitter.com/sarahmitchell_dev",
+  "navigation": [
+    { "title": "Home", "url": "/" },
+    { "title": "About", "url": "/pages/about/" },
+    { "title": "Projects", "url": "/pages/projects/" },
+    { "title": "Contact", "url": "/pages/contact/" },
+    { "title": "Search", "url": "/search/" }
+  ]
+}

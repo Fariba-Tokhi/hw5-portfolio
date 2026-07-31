@@ -1,0 +1,44 @@
+---
+layout: layout.njk
+title: "Contact"
+description: "Contact Sarah Mitchell"
+---
+
+<section data-pagefind-body>
+  <h1>Let's Connect</h1>
+  <p>I'm always excited to connect with fellow developers, accessibility advocates, and anyone who cares about making the web better.</p>
+  <p>I try to respond to everyone within <strong>24-48 hours</strong>.</p>
+</section>
+
+<section>
+  <h2>Send Me a Message</h2>
+  <form action="#" method="POST">
+    <fieldset>
+      <legend>Your Information</legend>
+      
+      <label for="name">Your Name:</label>
+      <input type="text" id="name" name="name" placeholder="Jane Doe" required>
+      
+      <label for="email">Your Email:</label>
+      <input type="email" id="email" name="email" placeholder="jane@example.com" required>
+      
+      <label for="subject">Subject:</label>
+      <input type="text" id="subject" name="subject" placeholder="Project inquiry">
+      
+      <label for="message">Your Message:</label>
+      <textarea id="message" name="message" rows="5" placeholder="Tell me about your project..." required></textarea>
+      
+      <button type="submit"><strong>Send Message</strong></button>
+    </fieldset>
+  </form>
+</section>
+
+<section>
+  <h2>Other Ways to Reach Me</h2>
+  <ul>
+    <li><strong>Email:</strong> <a href="mailto:{{ site.email }}">{{ site.email }}</a></li>
+    <li><strong>GitHub:</strong> <a href="{{ site.github }}">{{ site.github }}</a></li>
+    <li><strong>LinkedIn:</strong> <a href="{{ site.linkedin }}">{{ site.linkedin }}</a></li>
+    <li><strong>Twitter:</strong> <a href="{{ site.twitter }}">{{ site.twitter }}</a></li>
+  </ul>
+</section>

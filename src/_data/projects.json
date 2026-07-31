@@ -1,0 +1,34 @@
+[
+  {
+    "title": "GreenFootprint",
+    "slug": "greenfootprint",
+    "description": "A carbon tracking web app that makes sustainability engaging and accessible.",
+    "technologies": ["HTML5", "CSS3", "JavaScript", "Chart.js"],
+    "features": ["Dashboard", "Data Visualizations", "Responsive"],
+    "link": "/projects/greenfootprint/"
+  },
+  {
+    "title": "ReadAll News",
+    "slug": "readall-news",
+    "description": "A WCAG 2.1 AA compliant news platform for all users.",
+    "technologies": ["HTML5", "CSS3", "ARIA", "Screen Reader Testing"],
+    "features": ["Semantic HTML", "ARIA Landmarks", "Keyboard Navigation"],
+    "link": "/projects/readall-news/"
+  },
+  {
+    "title": "Artisan Connect",
+    "slug": "artisan-connect",
+    "description": "A marketplace for local artists to sell directly to customers.",
+    "technologies": ["HTML5", "CSS3", "JavaScript", "Stripe API"],
+    "features": ["Product Catalog", "Shopping Cart", "Secure Checkout"],
+    "link": "/projects/artisan-connect/"
+  },
+  {
+    "title": "Portfolio Builder",
+    "slug": "portfolio-builder",
+    "description": "A drag-and-drop portfolio tool for creatives.",
+    "technologies": ["HTML5", "CSS3", "JavaScript", "Custom Elements"],
+    "features": ["Drag-and-Drop", "Semantic HTML", "Accessible"],
+    "link": "/projects/portfolio-builder/"
+  }
+]

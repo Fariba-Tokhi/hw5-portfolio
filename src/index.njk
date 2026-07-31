@@ -1,0 +1,47 @@
+---
+layout: layout.njk
+title: "Home"
+description: "Personal portfolio of Sarah Mitchell - Web Developer & Accessibility Advocate"
+---
+
+<section class="hero" data-pagefind-body>
+  <h1><strong>Hi, I'm Sarah</strong></h1>
+  <p><em>Web Developer &amp; Accessibility Advocate</em></p>
+  <p>
+    <b>I believe the web should be for everyone.</b> 
+    That's why I build <i>accessible, user-centered websites</i> 
+    that are <strong>clean, semantic, and a joy to use</strong>.
+  </p>
+  <a href="/pages/projects/" class="cta-button"><b>See What I've Built</b></a>
+</section>
+
+<section data-pagefind-body>
+  <h2>Projects I'm Proud Of</h2>
+  <div class="project-grid">
+    {% for project in projects %}
+    <article>
+      <h3>{{ project.title }}</h3>
+      <p>{{ project.description }}</p>
+      <p><em>Built with: {{ project.technologies | join(", ") }}</em></p>
+      <a href="{{ project.link }}">Read the Case Study</a>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section data-pagefind-body>
+  <h2>GitHub Activity</h2>
+  <github-activity username="Fariba-Tokhi" limit="5">
+    <p>GitHub activity feed will appear here.</p>
+  </github-activity>
+</section>
+
+<section data-pagefind-body>
+  <h2>What I Bring to the Table</h2>
+  <ul>
+    <li><strong>Semantic HTML</strong> — Expert</li>
+    <li><strong>CSS3 &amp; Flexbox/Grid</strong> — Advanced</li>
+    <li><strong>JavaScript ES6+</strong> — Intermediate</li>
+    <li><strong>Accessibility (WCAG)</strong> — My passion</li>
+  </ul>
+</section>
