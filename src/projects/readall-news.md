@@ -8,7 +8,10 @@ timeline: "6 weeks | Solo project"
 technologies: ["HTML5", "CSS3", "ARIA", "Screen Reader Testing"]
 features: ["Semantic HTML", "ARIA Landmarks", "Keyboard Navigation"]
 ---
+
 <div data-pagefind-body>
+
+# ReadAll News: Accessible News for Everyone
 
 ## The Problem
 
@@ -41,6 +44,6 @@ I built a news platform with **accessibility first** — every decision was guid
 
 > "Finally, a news site I can actually read without struggling with my screen reader." — *User with visual impairment*
 
-[Back to Projects](/pages/projects/)
+[Back to Projects](/projects/)
 
 </div>
