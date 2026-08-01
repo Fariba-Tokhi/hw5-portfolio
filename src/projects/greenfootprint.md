@@ -8,7 +8,10 @@ timeline: "8 weeks | Solo project"
 technologies: ["HTML5", "CSS3", "JavaScript", "Chart.js"]
 features: ["Dashboard", "Data Visualizations", "Responsive"]
 ---
+
 <div data-pagefind-body>
+
+# GreenFootprint: Making Sustainability Accessible
 
 ## The Problem
 
@@ -66,6 +69,6 @@ Carbon footprint data is **complicated**. How do you *simplify* it without losin
 
 > "GreenFootprint is the first carbon tracker I've actually enjoyed using. The charts are clear, the recommendations are helpful, and it works with my screen reader!" — *Test user with visual impairment*
 
-[Back to Projects](/pages/projects/)
+[Back to Projects](/projects/)
 
 </div>
