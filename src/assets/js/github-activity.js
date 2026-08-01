@@ -14,7 +14,7 @@ class GitHubActivity extends HTMLElement {
     
     this.attachShadow({ mode: 'open' });
     
-    // Define the template inside the component
+    // Create template
     const template = document.createElement('template');
     template.innerHTML = `
       <style>
@@ -91,7 +91,16 @@ class GitHubActivity extends HTMLElement {
     
     this.shadowRoot.appendChild(template.content.cloneNode(true));
     
-    // Set initial idle state
+    // Store references
+    this.listElement = this.shadowRoot.querySelector('.activity-list');
+    this.errorMessage = this.shadowRoot.querySelector('.error-message');
+    this.retryButton = this.shadowRoot.querySelector('.retry-btn');
+    
+    // Bind retry
+    if (this.retryButton) {
+      this.retryButton.addEventListener('click', () => this.fetchActivity());
+    }
+    
     this.setState('idle');
     
     this.cacheKey = `github-activity-${this.username}`;
@@ -99,7 +108,6 @@ class GitHubActivity extends HTMLElement {
   }
   
   connectedCallback() {
-    // Only fetch if we have a username
     if (this.username) {
       this.fetchActivity();
     }
@@ -153,10 +161,8 @@ class GitHubActivity extends HTMLElement {
   
   setState(state, message) {
     this.setAttribute('state', state);
-    const errorMsg = this.shadowRoot.querySelector('.error-message');
-    if (errorMsg && message) {
-      // Safely set text content
-      errorMsg.textContent = message;
+    if (this.errorMessage && message) {
+      this.errorMessage.textContent = message;
     }
   }
   
@@ -233,12 +239,11 @@ class GitHubActivity extends HTMLElement {
   }
   
   renderActivity(events) {
-    const list = this.shadowRoot.querySelector('.activity-list');
-    if (!list) return;
+    if (!this.listElement) return;
     
     // Clear the list safely
-    while (list.firstChild) {
-      list.removeChild(list.firstChild);
+    while (this.listElement.firstChild) {
+      this.listElement.removeChild(this.listElement.firstChild);
     }
     
     const limited = events.slice(0, this.limit);
@@ -246,7 +251,7 @@ class GitHubActivity extends HTMLElement {
     if (limited.length === 0) {
       const li = document.createElement('li');
       li.textContent = 'No recent activity found.';
-      list.appendChild(li);
+      this.listElement.appendChild(li);
       return;
     }
     
@@ -281,11 +286,10 @@ class GitHubActivity extends HTMLElement {
         li.appendChild(detailSpan);
       }
       
-      list.appendChild(li);
+      this.listElement.appendChild(li);
     });
   }
   
-  // Helper methods remain the same
   formatEventType(type) {
     const types = {
       'PushEvent': '📦 Pushed',
