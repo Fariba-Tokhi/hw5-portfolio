@@ -1,8 +1,8 @@
 (function() {
   const STORAGE_KEY = 'theme-preference';
   const root = document.documentElement;
-  const select = document.querySelector('#theme-select');
-  if (!select) return;
+  const options = document.querySelectorAll('.theme-option');
+  if (!options.length) return;
 
   function getStoredTheme() {
     try {
@@ -19,13 +19,21 @@
     try { localStorage.setItem(STORAGE_KEY, theme); } catch (_) {}
   }
 
+  function syncControls(theme) {
+    options.forEach(function(input) {
+      input.checked = input.value === theme;
+    });
+  }
+
   function init() {
     const current = getStoredTheme();
-    select.value = current;
+    syncControls(current);
     applyTheme(current);
 
-    select.addEventListener('change', function() {
-      applyTheme(select.value);
+    options.forEach(function(input) {
+      input.addEventListener('change', function() {
+        if (input.checked) applyTheme(input.value);
+      });
     });
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
