@@ -3,36 +3,15 @@ class GitHubActivity extends HTMLElement {
     return ['username', 'limit'];
   }
 
-  constructor() {
-    super();
-    this.username = this.getAttribute('username') || 'Fariba-Tokhi';
-    this.limit = parseInt(this.getAttribute('limit')) || 5;
-    this.abortController = null;
-    this.timeoutId = null;
-    this.retryCount = 0;
-    this.maxRetries = 2;
+  // Build the <template> element once (shared across every instance of this
+  // component) using DOM APIs only - createElement / textContent - never an
+  // HTML markup string. Cached on the class so repeated instances clone it
+  // instead of rebuilding it from scratch each time.
+  static getTemplate() {
+    if (GitHubActivity._template) return GitHubActivity._template;
 
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(this.buildTemplate());
-    this.updateUsernameDisplay();
-
-    if (this.retryButton) {
-      this.retryButton.addEventListener('click', () => this.fetchActivity());
-    }
-
-    this.setState('idle');
-    this.cacheKey = `github-activity-${this.username}`;
-    this.cacheTTL = 5 * 60 * 1000;
-  }
-
-  // Build the shadow DOM skeleton entirely with DOM APIs (createElement /
-  // textContent) rather than assigning an HTML markup string. Nothing here
-  // is remote or user data - it's the component's own static structure -
-  // but the component never assigns markup strings anywhere, so there's no
-  // unsafe-assignment API left in this file that a data value could
-  // accidentally be routed through later.
-  buildTemplate() {
-    const fragment = document.createDocumentFragment();
+    const template = document.createElement('template');
+    const content = template.content;
 
     const style = document.createElement('style');
     style.textContent = `
@@ -63,23 +42,22 @@ class GitHubActivity extends HTMLElement {
       :host([state="idle"]) .fallback-content { display: none; }
       .attribution { font-size: 0.8em; opacity: 0.6; margin-top: 10px; }
     `;
-    fragment.appendChild(style);
+    content.appendChild(style);
 
     const fallback = document.createElement('div');
     fallback.className = 'fallback-content';
-    this.fallbackSlot = document.createElement('slot');
-    fallback.appendChild(this.fallbackSlot);
-    fragment.appendChild(fallback);
+    fallback.appendChild(document.createElement('slot'));
+    content.appendChild(fallback);
 
     const idle = document.createElement('div');
     idle.className = 'idle-message';
     idle.textContent = 'Waiting to load GitHub activity...';
-    fragment.appendChild(idle);
+    content.appendChild(idle);
 
     const loading = document.createElement('div');
     loading.className = 'loading-text';
     loading.textContent = 'Loading GitHub activity...';
-    fragment.appendChild(loading);
+    content.appendChild(loading);
 
     const error = document.createElement('div');
     error.className = 'error';
@@ -87,32 +65,63 @@ class GitHubActivity extends HTMLElement {
     const errorStrong = document.createElement('strong');
     errorStrong.textContent = '⚠️ Could not load GitHub activity';
     errorHeading.appendChild(errorStrong);
-    this.errorMessage = document.createElement('p');
-    this.errorMessage.className = 'error-message';
-    this.retryButton = document.createElement('button');
-    this.retryButton.type = 'button';
-    this.retryButton.className = 'retry-btn';
-    this.retryButton.textContent = 'Retry';
-    error.append(errorHeading, this.errorMessage, this.retryButton);
-    fragment.appendChild(error);
+    const errorMessage = document.createElement('p');
+    errorMessage.className = 'error-message';
+    const retryButton = document.createElement('button');
+    retryButton.type = 'button';
+    retryButton.className = 'retry-btn';
+    retryButton.textContent = 'Retry';
+    error.append(errorHeading, errorMessage, retryButton);
+    content.appendChild(error);
 
-    const content = document.createElement('div');
-    content.className = 'content';
-    this.listElement = document.createElement('ul');
-    this.listElement.className = 'activity-list';
+    const contentWrap = document.createElement('div');
+    contentWrap.className = 'content';
+    const list = document.createElement('ul');
+    list.className = 'activity-list';
     const attribution = document.createElement('div');
     attribution.className = 'attribution';
     attribution.append('Data from ');
-    this.attributionLink = document.createElement('a');
-    this.attributionLink.className = 'attribution-link';
-    this.attributionLink.target = '_blank';
-    this.attributionLink.rel = 'noopener';
-    this.attributionLink.textContent = 'GitHub';
-    attribution.appendChild(this.attributionLink);
-    content.append(this.listElement, attribution);
-    fragment.appendChild(content);
+    const link = document.createElement('a');
+    link.className = 'attribution-link';
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'GitHub';
+    attribution.appendChild(link);
+    contentWrap.append(list, attribution);
+    content.appendChild(contentWrap);
 
-    return fragment;
+    GitHubActivity._template = template;
+    return template;
+  }
+
+  constructor() {
+    super();
+    this.username = this.getAttribute('username') || 'Fariba-Tokhi';
+    this.limit = parseInt(this.getAttribute('limit')) || 5;
+    this.abortController = null;
+    this.timeoutId = null;
+    this.retryCount = 0;
+    this.maxRetries = 2;
+
+    this.attachShadow({ mode: 'open' });
+
+    const template = GitHubActivity.getTemplate();
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+
+    this.listElement = this.shadowRoot.querySelector('.activity-list');
+    this.errorMessage = this.shadowRoot.querySelector('.error-message');
+    this.retryButton = this.shadowRoot.querySelector('.retry-btn');
+    this.fallbackSlot = this.shadowRoot.querySelector('.fallback-content slot');
+    this.attributionLink = this.shadowRoot.querySelector('.attribution-link');
+    this.updateUsernameDisplay();
+
+    if (this.retryButton) {
+      this.retryButton.addEventListener('click', () => this.fetchActivity());
+    }
+
+    this.setState('idle');
+    this.cacheKey = `github-activity-${this.username}`;
+    this.cacheTTL = 5 * 60 * 1000;
   }
 
   updateUsernameDisplay() {
