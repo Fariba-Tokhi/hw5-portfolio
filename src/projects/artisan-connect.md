@@ -4,7 +4,7 @@ title: "Artisan Connect Case Study"
 description: "Case study of Artisan Connect - Local Artisan Marketplace"
 projectTitle: "Artisan Connect"
 subtitle: "A marketplace for local artists to sell directly"
-timeline: "10 weeks | Team project"
+timeline: "10   weeks | Team project"
 technologies: ["HTML5", "CSS3", "JavaScript", "Stripe API"]
 features: ["Product Catalog", "Shopping Cart", "Secure Checkout"]
 ---
