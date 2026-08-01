@@ -12,13 +12,19 @@
     return 'system';
   }
 
-  function applyTheme(theme) {
-    root.removeAttribute('data-theme');
+  function setThemeState(theme) {
+    // Explicitly set data-theme attribute on root
     if (theme === 'system') {
-      // Let CSS prefers-color-scheme handle it
+      root.removeAttribute('data-theme');
     } else {
       root.setAttribute('data-theme', theme);
     }
+    // Also set a data-theme-state for debugging
+    root.setAttribute('data-theme-state', theme);
+  }
+
+  function applyTheme(theme) {
+    setThemeState(theme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch (_) {}
@@ -28,9 +34,24 @@
   function updateToggleButton(theme) {
     const toggle = document.querySelector('.theme-toggle');
     if (!toggle) return;
-    const labels = { light: '☀️ Light', dark: '🌙 Dark', system: '🌓 System' };
-    toggle.textContent = labels[theme] || '🌓 System';
-    toggle.setAttribute('aria-pressed', theme === 'system' ? 'false' : 'true');
+
+    // Clear all text and set the correct one using textContent
+    toggle.textContent = '';
+
+    const labels = {
+      light: '☀️ Light',
+      dark: '🌙 Dark',
+      system: '🌓 System'
+    };
+
+    const textNode = document.createTextNode(labels[theme] || '🌓 System');
+    toggle.appendChild(textNode);
+
+    if (theme === 'system') {
+      toggle.setAttribute('aria-pressed', 'false');
+    } else {
+      toggle.setAttribute('aria-pressed', 'true');
+    }
   }
 
   function cycleTheme() {
