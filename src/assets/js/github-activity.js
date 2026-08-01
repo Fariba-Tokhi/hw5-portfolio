@@ -1,6 +1,3 @@
-// Web Component: <github-activity>
-// Fetches and displays GitHub activity for a user
-
 class GitHubActivity extends HTMLElement {
   static get observedAttributes() {
     return ['username', 'limit'];
@@ -15,11 +12,11 @@ class GitHubActivity extends HTMLElement {
     this.retryCount = 0;
     this.maxRetries = 2;
     
-    // Create shadow DOM
     this.attachShadow({ mode: 'open' });
     
-    // Define template
-    this.shadowRoot.innerHTML = `
+    // Define the template inside the component
+    const template = document.createElement('template');
+    template.innerHTML = `
       <style>
         :host {
           display: block;
@@ -31,8 +28,14 @@ class GitHubActivity extends HTMLElement {
         :host([state="loading"]) .content { opacity: 0.6; }
         :host([state="error"]) .error { display: block; }
         :host([state="success"]) .error { display: none; }
+        :host([state="idle"]) .idle-message { display: block; }
+        :host([state="idle"]) .content { display: none; }
+        :host([state="loading"]) .idle-message { display: none; }
+        :host([state="success"]) .idle-message { display: none; }
+        :host([state="error"]) .idle-message { display: none; }
         
         .error { display: none; color: #c0392b; }
+        .idle-message { display: none; color: var(--color-text, #222); opacity: 0.7; }
         .loading-text { display: none; }
         :host([state="loading"]) .loading-text { display: block; }
         
@@ -51,15 +54,12 @@ class GitHubActivity extends HTMLElement {
           border: none;
           cursor: pointer;
         }
-        .retry-btn:hover {
-          opacity: 0.8;
-        }
+        .retry-btn:hover { opacity: 0.8; }
         
-        .fallback-content {
-          display: block;
-        }
+        .fallback-content { display: block; }
         :host([state="success"]) .fallback-content,
-        :host([state="loading"]) .fallback-content {
+        :host([state="loading"]) .fallback-content,
+        :host([state="idle"]) .fallback-content {
           display: none;
         }
         
@@ -74,6 +74,7 @@ class GitHubActivity extends HTMLElement {
         <slot>GitHub activity for ${this.username}</slot>
       </div>
       
+      <div class="idle-message">Waiting to load GitHub activity...</div>
       <div class="loading-text">Loading GitHub activity...</div>
       
       <div class="error">
@@ -88,13 +89,20 @@ class GitHubActivity extends HTMLElement {
       </div>
     `;
     
-    // Cache
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    
+    // Set initial idle state
+    this.setState('idle');
+    
     this.cacheKey = `github-activity-${this.username}`;
-    this.cacheTTL = 5 * 60 * 1000; // 5 minutes
+    this.cacheTTL = 5 * 60 * 1000;
   }
   
   connectedCallback() {
-    this.fetchActivity();
+    // Only fetch if we have a username
+    if (this.username) {
+      this.fetchActivity();
+    }
   }
   
   disconnectedCallback() {
@@ -121,7 +129,6 @@ class GitHubActivity extends HTMLElement {
     }
   }
   
-  // Get cached data if fresh
   getCachedData() {
     try {
       const cached = sessionStorage.getItem(this.cacheKey);
@@ -131,9 +138,7 @@ class GitHubActivity extends HTMLElement {
           return data.value;
         }
       }
-    } catch (e) {
-      // Cache unavailable
-    }
+    } catch (e) {}
     return null;
   }
   
@@ -143,21 +148,19 @@ class GitHubActivity extends HTMLElement {
         timestamp: Date.now(),
         value: data
       }));
-    } catch (e) {
-      // Cache unavailable
-    }
+    } catch (e) {}
   }
   
   setState(state, message) {
     this.setAttribute('state', state);
-    if (message) {
-      const errorMsg = this.shadowRoot.querySelector('.error-message');
-      if (errorMsg) errorMsg.textContent = message;
+    const errorMsg = this.shadowRoot.querySelector('.error-message');
+    if (errorMsg && message) {
+      // Safely set text content
+      errorMsg.textContent = message;
     }
   }
   
   async fetchActivity() {
-    // Check cache first
     const cached = this.getCachedData();
     if (cached) {
       this.renderActivity(cached);
@@ -165,7 +168,6 @@ class GitHubActivity extends HTMLElement {
       return;
     }
     
-    // Cancel any in-flight request
     if (this.abortController) {
       this.abortController.abort();
     }
@@ -173,7 +175,6 @@ class GitHubActivity extends HTMLElement {
     this.abortController = new AbortController();
     this.setState('loading');
     
-    // Set timeout
     this.timeoutId = setTimeout(() => {
       if (this.abortController) {
         this.abortController.abort();
@@ -184,12 +185,9 @@ class GitHubActivity extends HTMLElement {
     
     try {
       const url = `https://api.github.com/users/${encodeURIComponent(this.username)}/events`;
-      
       const response = await fetch(url, {
         signal: this.abortController.signal,
-        headers: {
-          'Accept': 'application/vnd.github.v3+json'
-        }
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
       });
       
       clearTimeout(this.timeoutId);
@@ -200,14 +198,11 @@ class GitHubActivity extends HTMLElement {
       }
       
       const data = await response.json();
-      
       if (!Array.isArray(data) || data.length === 0) {
         throw new Error('No activity found for this user');
       }
       
-      // Cache the result
       this.setCachedData(data);
-      
       this.renderActivity(data);
       this.setState('success');
       this.retryCount = 0;
@@ -225,7 +220,6 @@ class GitHubActivity extends HTMLElement {
       const message = error.message || 'Failed to load GitHub activity';
       this.setState('error', `${message} (attempt ${this.retryCount})`);
       
-      // Auto-retry up to maxRetries
       if (this.retryCount < this.maxRetries) {
         setTimeout(() => {
           if (this.isConnected) {
@@ -242,10 +236,11 @@ class GitHubActivity extends HTMLElement {
     const list = this.shadowRoot.querySelector('.activity-list');
     if (!list) return;
     
-    // Clear existing items
-    list.innerHTML = '';
+    // Clear the list safely
+    while (list.firstChild) {
+      list.removeChild(list.firstChild);
+    }
     
-    // Limit the number of events
     const limited = events.slice(0, this.limit);
     
     if (limited.length === 0) {
@@ -258,17 +253,14 @@ class GitHubActivity extends HTMLElement {
     limited.forEach(event => {
       const li = document.createElement('li');
       
-      // Event type
       const typeSpan = document.createElement('span');
       typeSpan.className = 'event-type';
       typeSpan.textContent = this.formatEventType(event.type);
       
-      // Repository name
       const repoSpan = document.createElement('span');
       repoSpan.className = 'event-repo';
       repoSpan.textContent = event.repo ? event.repo.name : 'unknown repo';
       
-      // Time
       const timeSpan = document.createElement('span');
       timeSpan.className = 'event-time';
       timeSpan.textContent = event.created_at ? this.formatTime(event.created_at) : '';
@@ -281,7 +273,6 @@ class GitHubActivity extends HTMLElement {
         li.appendChild(timeSpan);
       }
       
-      // Add details based on event type
       const details = this.getEventDetails(event);
       if (details) {
         const detailSpan = document.createElement('span');
@@ -294,6 +285,7 @@ class GitHubActivity extends HTMLElement {
     });
   }
   
+  // Helper methods remain the same
   formatEventType(type) {
     const types = {
       'PushEvent': '📦 Pushed',
@@ -313,7 +305,6 @@ class GitHubActivity extends HTMLElement {
       const date = new Date(isoString);
       const now = new Date();
       const diff = Math.floor((now - date) / 1000 / 60);
-      
       if (diff < 1) return 'just now';
       if (diff < 60) return `${diff}m ago`;
       if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
@@ -341,5 +332,4 @@ class GitHubActivity extends HTMLElement {
   }
 }
 
-// Register the custom element
 customElements.define('github-activity', GitHubActivity);
