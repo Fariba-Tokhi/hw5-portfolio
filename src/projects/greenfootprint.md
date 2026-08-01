@@ -69,6 +69,6 @@ Carbon footprint data is **complicated**. How do you *simplify* it without losin
 
 > "GreenFootprint is the first carbon tracker I've actually enjoyed using. The charts are clear, the recommendations are helpful, and it works with my screen reader!" — *Test user with visual impairment*
 
-[Back to Projects](/projects/)
+[Back to Projects](/pages/projects/)
 
 </div>

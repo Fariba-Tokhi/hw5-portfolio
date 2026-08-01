@@ -43,6 +43,6 @@ I built a simple, accessible marketplace where artists can showcase their work a
 
 > "Artisan Connect helped me reach customers I never could have found on my own. The platform is easy to use and the fees are fair." — *Local artist*
 
-[Back to Projects](/projects/)
+[Back to Projects](/pages/projects/)
 
 </div>

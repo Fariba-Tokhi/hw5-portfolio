@@ -43,6 +43,6 @@ I built a drag-and-drop tool that generates semantic, accessible HTML automatica
 
 > "Portfolio Builder made creating my portfolio so easy. I didn't have to write a single line of code!" — *Happy user*
 
-[Back to Projects](/projects/)
+[Back to Projects](/pages/projects/)
 
 </div>

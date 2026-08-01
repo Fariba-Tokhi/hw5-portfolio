@@ -44,6 +44,6 @@ I built a news platform with **accessibility first** — every decision was guid
 
 > "Finally, a news site I can actually read without struggling with my screen reader." — *User with visual impairment*
 
-[Back to Projects](/projects/)
+[Back to Projects](/pages/projects/)
 
 </div>
