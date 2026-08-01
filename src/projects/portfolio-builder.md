@@ -8,7 +8,10 @@ timeline: "8 weeks | Solo project"
 technologies: ["HTML5", "CSS3", "JavaScript", "Custom Elements"]
 features: ["Drag-and-Drop", "Semantic HTML", "Accessible"]
 ---
+
 <div data-pagefind-body>
+
+# Portfolio Builder: Drag-and-Drop for Creatives
 
 ## The Problem
 
@@ -40,6 +43,6 @@ I built a drag-and-drop tool that generates semantic, accessible HTML automatica
 
 > "Portfolio Builder made creating my portfolio so easy. I didn't have to write a single line of code!" — *Happy user*
 
-[Back to Projects](/pages/projects/)
+[Back to Projects](/projects/)
 
 </div>
