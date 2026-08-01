@@ -1,6 +1,8 @@
 (function() {
   const STORAGE_KEY = 'theme-preference';
   const root = document.documentElement;
+  const select = document.querySelector('#theme-select');
+  if (!select) return;
 
   function getStoredTheme() {
     try {
@@ -12,67 +14,22 @@
     return 'system';
   }
 
-  function setThemeState(theme) {
-    // Explicitly set data-theme attribute on root
-    if (theme === 'system') {
-      root.removeAttribute('data-theme');
-    } else {
-      root.setAttribute('data-theme', theme);
-    }
-    // Also set a data-theme-state for debugging
-    root.setAttribute('data-theme-state', theme);
-  }
-
   function applyTheme(theme) {
-    setThemeState(theme);
-    try {
-      localStorage.setItem(STORAGE_KEY, theme);
-    } catch (_) {}
-    updateToggleButton(theme);
-  }
-
-  function updateToggleButton(theme) {
-    const toggle = document.querySelector('.theme-toggle');
-    if (!toggle) return;
-
-    // Clear all text and set the correct one using textContent
-    toggle.textContent = '';
-
-    const labels = {
-      light: '☀️ Light',
-      dark: '🌙 Dark',
-      system: '🌓 System'
-    };
-
-    const textNode = document.createTextNode(labels[theme] || '🌓 System');
-    toggle.appendChild(textNode);
-
-    if (theme === 'system') {
-      toggle.setAttribute('aria-pressed', 'false');
-    } else {
-      toggle.setAttribute('aria-pressed', 'true');
-    }
-  }
-
-  function cycleTheme() {
-    const current = getStoredTheme();
-    const next = current === 'system' ? 'light' : current === 'light' ? 'dark' : 'system';
-    applyTheme(next);
+    root.setAttribute('data-theme', theme);
+    try { localStorage.setItem(STORAGE_KEY, theme); } catch (_) {}
   }
 
   function init() {
-    const theme = getStoredTheme();
-    applyTheme(theme);
+    const current = getStoredTheme();
+    select.value = current;
+    applyTheme(current);
 
-    const toggle = document.querySelector('.theme-toggle');
-    if (toggle) {
-      toggle.addEventListener('click', cycleTheme);
-    }
+    select.addEventListener('change', function() {
+      applyTheme(select.value);
+    });
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
-      if (getStoredTheme() === 'system') {
-        applyTheme('system');
-      }
+      if (getStoredTheme() === 'system') applyTheme('system');
     });
   }
 
