@@ -1,14 +1,24 @@
 <header data-pagefind-ignore>
-  <div class="logo-area"><strong>SM</strong></div>
+  <div class="logo-area">
+    <strong>SM</strong>
+  </div>
+  
   <nav aria-label="Main navigation">
     <ul>
       {% for item in site.navigation %}
-      <li><a href="{{ item.url }}" {% if item.url == page.url %}aria-current="page"{% endif %}>{{ item.title }}</a></li>
-      {% endfor %}
       <li>
-        <button class="theme-toggle" aria-label="Toggle theme" aria-pressed="false">
-          🌓 System 
-        </button>
+        <a href="{{ item.url }}" {% if item.url == page.url %}aria-current="page"{% endif %}>
+          {{ item.title }}
+        </a>
+      </li>
+      {% endfor %}
+      <li class="theme-control">
+        <label for="theme-select">Theme</label>
+        <select id="theme-select" class="theme-toggle">
+          <option value="light">☀️ Light</option>
+          <option value="dark">🌙 Dark</option>
+          <option value="system">🌓 System</option>
+        </select>
       </li>
     </ul>
   </nav>
