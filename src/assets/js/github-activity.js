@@ -11,62 +11,120 @@ class GitHubActivity extends HTMLElement {
     this.timeoutId = null;
     this.retryCount = 0;
     this.maxRetries = 2;
+    this.cacheKey = `github-activity-${this.username}`;
+    this.cacheTTL = 5 * 60 * 1000;
 
     this.attachShadow({ mode: 'open' });
-
-    // Build template using DOM methods, not innerHTML
-    const template = document.createElement('template');
-    template.innerHTML = `
-      <style>
-        :host { display: block; border: 1px solid var(--color-border, #666); padding: 15px; margin: 10px 0; background: var(--color-card-bg, #f5f5f5); }
-        :host([state="loading"]) .content { opacity: 0.6; }
-        :host([state="error"]) .error { display: block; }
-        :host([state="success"]) .error { display: none; }
-        :host([state="idle"]) .idle-message { display: block; }
-        :host([state="idle"]) .content { display: none; }
-        :host([state="loading"]) .idle-message { display: none; }
-        :host([state="success"]) .idle-message { display: none; }
-        :host([state="error"]) .idle-message { display: none; }
-        .error { display: none; color: #c0392b; }
-        .idle-message { display: none; color: var(--color-text, #222); opacity: 0.7; }
-        .loading-text { display: none; }
-        :host([state="loading"]) .loading-text { display: block; }
-        ul { list-style: none; padding: 0; }
-        li { padding: 8px 0; border-bottom: 1px solid var(--color-border, #999); }
-        li:last-child { border-bottom: none; }
-        .event-type { font-weight: bold; }
-        .event-repo { font-size: 0.9em; opacity: 0.8; }
-        .event-time { font-size: 0.8em; opacity: 0.7; }
-        .retry-btn { margin-top: 10px; padding: 5px 15px; background: var(--color-accent, #333); color: var(--color-bg, #fff); border: none; cursor: pointer; }
-        .retry-btn:hover { opacity: 0.8; }
-        .fallback-content { display: block; }
-        :host([state="success"]) .fallback-content,
-        :host([state="loading"]) .fallback-content,
-        :host([state="idle"]) .fallback-content { display: none; }
-        .attribution { font-size: 0.8em; opacity: 0.6; margin-top: 10px; }
-      </style>
-      <div class="fallback-content"><slot>GitHub activity for ${this.username}</slot></div>
-      <div class="idle-message">Waiting to load GitHub activity...</div>
-      <div class="loading-text">Loading GitHub activity...</div>
-      <div class="error"><p><strong>⚠️ Could not load GitHub activity</strong></p><p class="error-message"></p><button class="retry-btn">Retry</button></div>
-      <div class="content"><ul class="activity-list"></ul><div class="attribution">Data from <a href="https://github.com/${this.username}" target="_blank">GitHub</a></div></div>
-    `;
-
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-
-    this.listElement = this.shadowRoot.querySelector('.activity-list');
-    this.errorMessage = this.shadowRoot.querySelector('.error-message');
-    this.retryButton = this.shadowRoot.querySelector('.retry-btn');
+    this.buildTemplate();
+    this.cacheElements();
+    this.setState('idle');
 
     if (this.retryButton) {
       this.retryButton.addEventListener('click', () => this.fetchActivity());
     }
-
-    this.setState('idle');
-    this.cacheKey = `github-activity-${this.username}`;
-    this.cacheTTL = 5 * 60 * 1000;
   }
 
+  // ─── BUILD TEMPLATE USING DOM METHODS ─────────────────────────────
+  buildTemplate() {
+    const container = document.createDocumentFragment();
+
+    // Styles
+    const style = document.createElement('style');
+    style.textContent = `
+      :host { display: block; border: 1px solid var(--color-border, #666); padding: 15px; margin: 10px 0; background: var(--color-card-bg, #f5f5f5); }
+      :host([state="loading"]) .content { opacity: 0.6; }
+      :host([state="error"]) .error { display: block; }
+      :host([state="success"]) .error { display: none; }
+      :host([state="idle"]) .idle-message { display: block; }
+      :host([state="idle"]) .content { display: none; }
+      :host([state="loading"]) .idle-message { display: none; }
+      :host([state="success"]) .idle-message { display: none; }
+      :host([state="error"]) .idle-message { display: none; }
+      .error { display: none; color: #c0392b; }
+      .idle-message { display: none; color: var(--color-text, #222); opacity: 0.7; }
+      .loading-text { display: none; }
+      :host([state="loading"]) .loading-text { display: block; }
+      ul { list-style: none; padding: 0; margin: 0; }
+      li { padding: 8px 0; border-bottom: 1px solid var(--color-border, #999); }
+      li:last-child { border-bottom: none; }
+      .event-type { font-weight: bold; }
+      .event-repo { font-size: 0.9em; opacity: 0.8; }
+      .event-time { font-size: 0.8em; opacity: 0.7; }
+      .retry-btn { margin-top: 10px; padding: 5px 15px; background: var(--color-accent, #333); color: var(--color-bg, #fff); border: none; cursor: pointer; }
+      .retry-btn:hover { opacity: 0.8; }
+      .fallback-content { display: block; }
+      :host([state="success"]) .fallback-content,
+      :host([state="loading"]) .fallback-content,
+      :host([state="idle"]) .fallback-content { display: none; }
+      .attribution { font-size: 0.8em; opacity: 0.6; margin-top: 10px; }
+    `;
+    container.appendChild(style);
+
+    // Fallback slot
+    const fallback = document.createElement('div');
+    fallback.className = 'fallback-content';
+    const slot = document.createElement('slot');
+    slot.textContent = `GitHub activity for ${this.username}`;
+    fallback.appendChild(slot);
+    container.appendChild(fallback);
+
+    // Idle message
+    const idle = document.createElement('div');
+    idle.className = 'idle-message';
+    idle.textContent = 'Waiting to load GitHub activity...';
+    container.appendChild(idle);
+
+    // Loading
+    const loading = document.createElement('div');
+    loading.className = 'loading-text';
+    loading.textContent = 'Loading GitHub activity...';
+    container.appendChild(loading);
+
+    // Error
+    const error = document.createElement('div');
+    error.className = 'error';
+    const errorP = document.createElement('p');
+    const strong = document.createElement('strong');
+    strong.textContent = '⚠️ Could not load GitHub activity';
+    errorP.appendChild(strong);
+    error.appendChild(errorP);
+    const errorMsg = document.createElement('p');
+    errorMsg.className = 'error-message';
+    error.appendChild(errorMsg);
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'retry-btn';
+    retryBtn.textContent = 'Retry';
+    error.appendChild(retryBtn);
+    container.appendChild(error);
+
+    // Content
+    const content = document.createElement('div');
+    content.className = 'content';
+    const list = document.createElement('ul');
+    list.className = 'activity-list';
+    content.appendChild(list);
+    const attribution = document.createElement('div');
+    attribution.className = 'attribution';
+    const link = document.createElement('a');
+    link.href = `https://github.com/${this.username}`;
+    link.target = '_blank';
+    link.textContent = 'GitHub';
+    attribution.appendChild(document.createTextNode('Data from '));
+    attribution.appendChild(link);
+    content.appendChild(attribution);
+    container.appendChild(content);
+
+    this.shadowRoot.appendChild(container);
+  }
+
+  // ─── CACHE ELEMENTS ────────────────────────────────────────────────
+  cacheElements() {
+    this.listElement = this.shadowRoot.querySelector('.activity-list');
+    this.errorMessage = this.shadowRoot.querySelector('.error-message');
+    this.retryButton = this.shadowRoot.querySelector('.retry-btn');
+  }
+
+  // ─── LIFECYCLE ──────────────────────────────────────────────────────
   connectedCallback() {
     if (this.username) this.fetchActivity();
   }
@@ -94,6 +152,15 @@ class GitHubActivity extends HTMLElement {
     }
   }
 
+  // ─── STATE ──────────────────────────────────────────────────────────
+  setState(state, message) {
+    this.setAttribute('state', state);
+    if (this.errorMessage && message) {
+      this.errorMessage.textContent = message;
+    }
+  }
+
+  // ─── CACHE ──────────────────────────────────────────────────────────
   getCachedData() {
     try {
       const cached = sessionStorage.getItem(this.cacheKey);
@@ -109,17 +176,14 @@ class GitHubActivity extends HTMLElement {
 
   setCachedData(data) {
     try {
-      sessionStorage.setItem(this.cacheKey, JSON.stringify({ timestamp: Date.now(), value: data }));
+      sessionStorage.setItem(this.cacheKey, JSON.stringify({
+        timestamp: Date.now(),
+        value: data
+      }));
     } catch (_) {}
   }
 
-  setState(state, message) {
-    this.setAttribute('state', state);
-    if (this.errorMessage && message) {
-      this.errorMessage.textContent = message;
-    }
-  }
-
+  // ─── FETCH ──────────────────────────────────────────────────────────
   async fetchActivity() {
     const cached = this.getCachedData();
     if (cached) {
@@ -144,7 +208,7 @@ class GitHubActivity extends HTMLElement {
       const url = `https://api.github.com/users/${encodeURIComponent(this.username)}/events`;
       const response = await fetch(url, {
         signal: this.abortController.signal,
-        headers: { 'Accept': 'application/vnd.github.v3+json' }
+        headers: { Accept: 'application/vnd.github.v3+json' }
       });
 
       clearTimeout(this.timeoutId);
@@ -152,7 +216,9 @@ class GitHubActivity extends HTMLElement {
 
       if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
       const data = await response.json();
-      if (!Array.isArray(data) || data.length === 0) throw new Error('No activity found for this user');
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('No activity found for this user');
+      }
 
       this.setCachedData(data);
       this.renderActivity(data);
@@ -169,15 +235,19 @@ class GitHubActivity extends HTMLElement {
       const message = error.message || 'Failed to load GitHub activity';
       this.setState('error', `${message} (attempt ${this.retryCount})`);
       if (this.retryCount < this.maxRetries) {
-        setTimeout(() => { if (this.isConnected) this.fetchActivity(); }, 2000 * this.retryCount);
+        setTimeout(() => {
+          if (this.isConnected) this.fetchActivity();
+        }, 2000 * this.retryCount);
       }
     } finally {
       this.abortController = null;
     }
   }
 
+  // ─── RENDER (NO innerHTML) ────────────────────────────────────────
   renderActivity(events) {
     if (!this.listElement) return;
+
     while (this.listElement.firstChild) {
       this.listElement.removeChild(this.listElement.firstChild);
     }
@@ -192,23 +262,27 @@ class GitHubActivity extends HTMLElement {
 
     limited.forEach(event => {
       const li = document.createElement('li');
+
       const typeSpan = document.createElement('span');
       typeSpan.className = 'event-type';
       typeSpan.textContent = this.formatEventType(event.type);
+
       const repoSpan = document.createElement('span');
       repoSpan.className = 'event-repo';
       repoSpan.textContent = event.repo ? event.repo.name : 'unknown repo';
-      const timeSpan = document.createElement('span');
-      timeSpan.className = 'event-time';
-      timeSpan.textContent = event.created_at ? this.formatTime(event.created_at) : '';
 
       li.appendChild(typeSpan);
       li.appendChild(document.createTextNode(' on '));
       li.appendChild(repoSpan);
+
       if (event.created_at) {
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'event-time';
+        timeSpan.textContent = this.formatTime(event.created_at);
         li.appendChild(document.createTextNode(' — '));
         li.appendChild(timeSpan);
       }
+
       const details = this.getEventDetails(event);
       if (details) {
         const detailSpan = document.createElement('span');
@@ -216,29 +290,30 @@ class GitHubActivity extends HTMLElement {
         detailSpan.textContent = `: ${details}`;
         li.appendChild(detailSpan);
       }
+
       this.listElement.appendChild(li);
     });
   }
 
+  // ─── HELPERS ────────────────────────────────────────────────────────
   formatEventType(type) {
-    const types = {
-      'PushEvent': '📦 Pushed',
-      'CreateEvent': '✨ Created',
-      'DeleteEvent': '🗑️ Deleted',
-      'ForkEvent': '🍴 Forked',
-      'PullRequestEvent': '🔀 PR',
-      'IssuesEvent': '🐛 Issue',
-      'WatchEvent': '⭐ Starred',
-      'ReleaseEvent': '📦 Released'
+    const map = {
+      PushEvent: '📦 Pushed',
+      CreateEvent: '✨ Created',
+      DeleteEvent: '🗑️ Deleted',
+      ForkEvent: '🍴 Forked',
+      PullRequestEvent: '🔀 PR',
+      IssuesEvent: '🐛 Issue',
+      WatchEvent: '⭐ Starred',
+      ReleaseEvent: '📦 Released'
     };
-    return types[type] || type.replace('Event', '');
+    return map[type] || type.replace('Event', '');
   }
 
-  formatTime(isoString) {
+  formatTime(iso) {
     try {
-      const date = new Date(isoString);
-      const now = new Date();
-      const diff = Math.floor((now - date) / 1000 / 60);
+      const date = new Date(iso);
+      const diff = Math.floor((Date.now() - date) / 60000);
       if (diff < 1) return 'just now';
       if (diff < 60) return `${diff}m ago`;
       if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
