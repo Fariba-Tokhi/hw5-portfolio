@@ -1,7 +1,7 @@
 ---
 layout: layout.njk
 title: "ReadAll News Case Study"
-description: "Case study of ReadAll News - Accessible News Platform"
+description: "Case study of ReadAll News -  Accessible News Platform"
 projectTitle: "ReadAll News"
 subtitle: "A fully WCAG 2.1 AA compliant news platform"
 timeline: "6 weeks | Solo project"
