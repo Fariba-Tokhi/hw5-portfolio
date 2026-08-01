@@ -1,21 +1,25 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="system">
+<html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('theme-preference');
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+      } catch (_) {}
+    })();
+  </script>
   {% include "head.njk" %}
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
-  
   <div class="site-wrapper">
     {% include "header.njk" %}
-    
-    <main id="main-content">
-      {{ content | safe }}
-    </main>
-    
+    <main id="main-content">{{ content | safe }}</main>
     {% include "footer.njk" %}
   </div>
-  
   <script src="/assets/js/theme-picker.js" type="module"></script>
   <script src="/assets/js/github-activity.js" type="module"></script>
 </body>
