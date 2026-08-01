@@ -25,89 +25,33 @@ description: "Search this site"
   </div>
 </section>
 
-<style>
-  .search-page { max-width: 800px; margin: 0 auto; }
-  .search-form { display: flex; gap: 10px; margin: 20px 0; }
-  .search-form input { flex: 1; padding: 10px; border: 1px solid var(--color-border, #666); background: var(--color-bg, #fff); color: var(--color-text, #222); }
-  .search-form button { padding: 10px 20px; background: var(--color-accent, #333); color: var(--color-bg, #fff); border: none; cursor: pointer; }
-  .search-result { padding: 15px; border-bottom: 1px solid var(--color-border, #999); }
-  .search-result h3 a { color: var(--color-text, #222); text-decoration: none; }
-  .search-result h3 a:hover { text-decoration: underline; }
-  .search-result .excerpt { opacity: 0.8; font-size: 0.95em; }
-  .noscript-warning { padding: 20px; background: var(--color-card-bg, #f5f5f5); border: 1px solid var(--color-border, #999); }
-</style>
-
 <script>
   (function() {
-    const input = document.getElementById('search-input');
-    const container = document.getElementById('search-results');
+    const searchInput = document.getElementById('search-input');
+    const resultsContainer = document.getElementById('search-results');
     const form = document.querySelector('.search-form');
-    if (!input || !container) return;
+
+    if (!searchInput || !resultsContainer) return;
 
     let pagefind = null;
-    let loaded = false;
+    let isLoaded = false;
 
-    function clearContainer() {
-      while (container.firstChild) {
-        container.removeChild(container.firstChild);
-      }
-    }
-
-    function setMessage(text, isError) {
-      clearContainer();
+    function setMessage(text) {
+      resultsContainer.textContent = '';
       const p = document.createElement('p');
       p.textContent = text;
-      if (isError) {
-        p.style.color = '#c0392b';
-      }
-      container.appendChild(p);
-    }
-
-    function buildResultList(results, query) {
-      clearContainer();
-
-      const info = document.createElement('p');
-      info.textContent = `Found ${results.length} result${results.length !== 1 ? 's' : ''} for "${query}":`;
-      container.appendChild(info);
-
-      const list = document.createElement('div');
-      list.className = 'results-list';
-
-      results.forEach(result => {
-        result.data().then(data => {
-          const div = document.createElement('div');
-          div.className = 'search-result';
-
-          const h3 = document.createElement('h3');
-          const a = document.createElement('a');
-          a.href = data.url || '#';
-          a.textContent = data.meta?.title || 'Untitled';
-          h3.appendChild(a);
-          div.appendChild(h3);
-
-          if (data.excerpt) {
-            const excerpt = document.createElement('div');
-            excerpt.className = 'excerpt';
-            excerpt.textContent = data.excerpt;
-            div.appendChild(excerpt);
-          }
-
-          list.appendChild(div);
-        });
-      });
-
-      container.appendChild(list);
+      resultsContainer.appendChild(p);
     }
 
     async function loadPagefind() {
       try {
         const module = await import('/pagefind/pagefind.js');
         pagefind = module.default || module;
-        loaded = true;
+        isLoaded = true;
         setMessage('Search ready. Type something above.');
         return true;
-      } catch (_) {
-        setMessage('Search index not available. Please try again later.', true);
+      } catch (error) {
+        setMessage('Search index not available. Please try again later.');
         return false;
       }
     }
@@ -120,41 +64,87 @@ description: "Search this site"
 
       setMessage('Searching...');
 
-      if (!loaded) {
-        const ok = await loadPagefind();
-        if (!ok || !pagefind) {
-          setMessage('Search is temporarily unavailable.', true);
+      if (!isLoaded) {
+        const loaded = await loadPagefind();
+        if (!loaded || !pagefind) {
+          setMessage('Search is temporarily unavailable.');
           return;
         }
       }
 
       try {
         const search = await pagefind.search(query);
+
         if (!search || search.results.length === 0) {
-          setMessage(`No results found for "${query}".`);
+          resultsContainer.textContent = '';
+          const p = document.createElement('p');
+          p.append('No results found for "');
+          const strong = document.createElement('strong');
+          strong.textContent = query;
+          p.append(strong, '".');
+          resultsContainer.appendChild(p);
           return;
         }
-        buildResultList(search.results, query);
-      } catch (_) {
-        setMessage('Error performing search. Please try again.', true);
+
+        resultsContainer.textContent = '';
+
+        const summary = document.createElement('p');
+        const count = search.results.length;
+        summary.append(`Found ${count} result${count !== 1 ? 's' : ''} for "`);
+        const summaryStrong = document.createElement('strong');
+        summaryStrong.textContent = query;
+        summary.append(summaryStrong, '":');
+        resultsContainer.appendChild(summary);
+
+        const list = document.createElement('div');
+        list.className = 'results-list';
+
+        for (const result of search.results) {
+          const data = await result.data();
+          const url = data.url || '#';
+          const title = data.meta?.title || 'Untitled';
+          const excerpt = data.excerpt || '';
+
+          const item = document.createElement('div');
+          item.className = 'search-result';
+
+          const h3 = document.createElement('h3');
+          const link = document.createElement('a');
+          link.href = url;
+          link.textContent = title;
+          h3.appendChild(link);
+
+          const excerptDiv = document.createElement('div');
+          excerptDiv.className = 'excerpt';
+          excerptDiv.textContent = excerpt;
+
+          item.append(h3, excerptDiv);
+          list.appendChild(item);
+        }
+
+        resultsContainer.appendChild(list);
+
+      } catch (error) {
+        setMessage('Error performing search. Please try again.');
       }
     }
 
     if (form) {
       form.addEventListener('submit', function(e) {
         e.preventDefault();
-        performSearch(input.value);
+        performSearch(searchInput.value);
       });
     }
 
-    let timeout;
-    input.addEventListener('input', function() {
-      clearTimeout(timeout);
-      timeout = setTimeout(function() {
-        performSearch(input.value);
+    let debounceTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(function() {
+        performSearch(searchInput.value);
       }, 300);
     });
 
     loadPagefind();
+
   })();
 </script>
