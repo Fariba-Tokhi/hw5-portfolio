@@ -1,0 +1,25 @@
+---
+layout: layout.njk
+pagination:
+  data: projects
+  size: 1
+  alias: project
+permalink: "projects/{{ project.slug }}/"
+---
+
+<div data-pagefind-body>
+  <h1>{{ project.title }}</h1>
+  <p><strong>{{ project.subtitle }}</strong></p>
+  <p><em>Timeline: {{ project.timeline }}</em></p>
+  
+  <h2>The Problem</h2>
+  <p>{{ project.problem }}</p>
+  
+  <h2>My Approach</h2>
+  <p>{{ project.approach }}</p>
+  
+  <h2>Results</h2>
+  <p>{{ project.results }}</p>
+  
+  <p><a href="/projects/">Back to Projects</a></p>
+</div>
