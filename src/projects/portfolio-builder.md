@@ -3,7 +3,7 @@ layout: layout.njk
 title: "Portfolio Builder Case Study"
 description: "Case study of Portfolio Builder - Drag-and-Drop Tool"
 projectTitle: "Portfolio Builder"
-subtitle: "A drag-and-drop portfolio tool for creatives"
+subtitle: "A drag-and-drop portfolio tool  for creatives"
 timeline: "8 weeks | Solo project"
 technologies: ["HTML5", "CSS3", "JavaScript", "Custom Elements"]
 features: ["Drag-and-Drop", "Semantic HTML", "Accessible"]
