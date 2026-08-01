@@ -91,19 +91,28 @@ nav a[aria-current="page"] {
   color: var(--color-accent);
 }
 
-/* Theme toggle */
-.theme-toggle {
-  background: var(--color-card-bg);
+/* Theme control */
+.theme-control fieldset {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   border: 1px solid var(--color-border);
-  color: var(--color-text);
-  padding: 5px 15px;
-  cursor: pointer;
   border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 4px 10px;
+  margin: 0;
 }
 
-.theme-toggle:hover {
-  background: var(--color-hover);
+.theme-control legend {
+  font-size: 0.75rem;
+  padding: 0 4px;
+}
+
+.theme-control label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 /* Project grid */
