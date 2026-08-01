@@ -29,13 +29,13 @@
     // Clear any existing theme attribute
     root.removeAttribute('data-theme');
     
+    // Set the data-theme attribute on root
     if (theme === THEMES.SYSTEM) {
-      // System theme: remove attribute so CSS prefers-color-scheme takes over
       root.removeAttribute('data-theme');
       toggle.setAttribute('aria-pressed', 'false');
+      // Use textContent instead of innerHTML
       toggle.textContent = '🌓 System';
     } else {
-      // Apply the theme
       root.setAttribute('data-theme', theme);
       toggle.setAttribute('aria-pressed', 'true');
       toggle.textContent = theme === THEMES.LIGHT ? '☀️ Light' : '🌙 Dark';
@@ -69,11 +69,9 @@
     
     toggle.addEventListener('click', cycleTheme);
     
-    // Listen for system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', function() {
       if (getStoredTheme() === THEMES.SYSTEM) {
-        // Re-apply system theme to reflect change
         applyTheme(THEMES.SYSTEM);
       }
     });
