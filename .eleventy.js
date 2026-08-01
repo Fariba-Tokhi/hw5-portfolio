@@ -8,9 +8,6 @@ module.exports = function(eleventyConfig) {
   
   eleventyConfig.addPassthroughCopy("src/sitemap.xml");
   
-  // Ensure 404 is processed
-  eleventyConfig.addPassthroughCopy("src/404.njk");
-  
   return {
     dir: {
       input: "src",
