@@ -13,12 +13,21 @@
       </li>
       {% endfor %}
       <li class="theme-control">
-        <label for="theme-select">Theme</label>
-        <select id="theme-select" class="theme-toggle">
-          <option value="light">☀️ Light</option>
-          <option value="dark">🌙 Dark</option>
-          <option value="system">🌓 System</option>
-        </select>
+        <fieldset>
+          <legend>Theme</legend>
+          <label>
+            <input type="radio" name="theme" value="light" class="theme-option">
+            ☀️ Light
+          </label>
+          <label>
+            <input type="radio" name="theme" value="dark" class="theme-option">
+            🌙 Dark
+          </label>
+          <label>
+            <input type="radio" name="theme" value="system" class="theme-option">
+            🌓 System
+          </label>
+        </fieldset>
       </li>
     </ul>
   </nav>
