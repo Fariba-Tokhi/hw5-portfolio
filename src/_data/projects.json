@@ -2,7 +2,7 @@
   {
     "title": "GreenFootprint",
     "slug": "greenfootprint",
-    "description": "A carbon tracking web app that makes sustainability engaging and accessible.",
+    "description": "A carbon tracking web app that makes sustainability engaging and accessible. ",
     "technologies": ["HTML5", "CSS3", "JavaScript", "Chart.js"],
     "features": ["Dashboard", "Data Visualizations", "Responsive"],
     "link": "/projects/greenfootprint/"
