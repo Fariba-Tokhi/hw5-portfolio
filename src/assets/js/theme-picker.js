@@ -1,8 +1,6 @@
 (function() {
   const STORAGE_KEY = 'theme-preference';
   const root = document.documentElement;
-  const toggle = document.querySelector('.theme-toggle');
-  if (!toggle) return;
 
   function getStoredTheme() {
     try {
@@ -17,14 +15,22 @@
   function applyTheme(theme) {
     root.removeAttribute('data-theme');
     if (theme === 'system') {
-      toggle.textContent = '🌓 System';
-      toggle.setAttribute('aria-pressed', 'false');
+      // Let CSS prefers-color-scheme handle it
     } else {
       root.setAttribute('data-theme', theme);
-      toggle.textContent = theme === 'light' ? '☀️ Light' : '🌙 Dark';
-      toggle.setAttribute('aria-pressed', 'true');
     }
-    try { localStorage.setItem(STORAGE_KEY, theme); } catch (_) {}
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch (_) {}
+    updateToggleButton(theme);
+  }
+
+  function updateToggleButton(theme) {
+    const toggle = document.querySelector('.theme-toggle');
+    if (!toggle) return;
+    const labels = { light: '☀️ Light', dark: '🌙 Dark', system: '🌓 System' };
+    toggle.textContent = labels[theme] || '🌓 System';
+    toggle.setAttribute('aria-pressed', theme === 'system' ? 'false' : 'true');
   }
 
   function cycleTheme() {
@@ -34,10 +40,18 @@
   }
 
   function init() {
-    applyTheme(getStoredTheme());
-    toggle.addEventListener('click', cycleTheme);
+    const theme = getStoredTheme();
+    applyTheme(theme);
+
+    const toggle = document.querySelector('.theme-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', cycleTheme);
+    }
+
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
-      if (getStoredTheme() === 'system') applyTheme('system');
+      if (getStoredTheme() === 'system') {
+        applyTheme('system');
+      }
     });
   }
 
