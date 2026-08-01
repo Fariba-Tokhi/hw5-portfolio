@@ -33,7 +33,6 @@
     if (theme === THEMES.SYSTEM) {
       root.removeAttribute('data-theme');
       toggle.setAttribute('aria-pressed', 'false');
-      // Use textContent instead of innerHTML
       toggle.textContent = '🌓 System';
     } else {
       root.setAttribute('data-theme', theme);
