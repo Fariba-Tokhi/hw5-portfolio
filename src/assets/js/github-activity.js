@@ -14,7 +14,6 @@ class GitHubActivity extends HTMLElement {
     
     this.attachShadow({ mode: 'open' });
     
-    // Create template - this is the ONLY place innerHTML is used (template definition)
     const template = document.createElement('template');
     template.innerHTML = `
       <style>
@@ -91,12 +90,10 @@ class GitHubActivity extends HTMLElement {
     
     this.shadowRoot.appendChild(template.content.cloneNode(true));
     
-    // Store references
     this.listElement = this.shadowRoot.querySelector('.activity-list');
     this.errorMessage = this.shadowRoot.querySelector('.error-message');
     this.retryButton = this.shadowRoot.querySelector('.retry-btn');
     
-    // Bind retry
     if (this.retryButton) {
       this.retryButton.addEventListener('click', () => this.fetchActivity());
     }
@@ -241,7 +238,6 @@ class GitHubActivity extends HTMLElement {
   renderActivity(events) {
     if (!this.listElement) return;
     
-    // Clear the list safely
     while (this.listElement.firstChild) {
       this.listElement.removeChild(this.listElement.firstChild);
     }
