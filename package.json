@@ -1,7 +1,7 @@
 {
   "name": "hw5-portfolio",
   "version": "1.0.0",
-  "description": "Sarah Mitchell's Portfolio - HW5",
+  "description": "Sarah Mitchell's Portfolio -  HW5",
   "scripts": {
     "start": "eleventy --serve",
     "build": "eleventy && pagefind --site _site",
