@@ -14,7 +14,7 @@ class GitHubActivity extends HTMLElement {
     
     this.attachShadow({ mode: 'open' });
     
-    // Create template
+    // Create template - this is the ONLY place innerHTML is used (template definition)
     const template = document.createElement('template');
     template.innerHTML = `
       <style>
