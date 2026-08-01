@@ -11,6 +11,8 @@ features: ["Product Catalog", "Shopping Cart", "Secure Checkout"]
 
 <div data-pagefind-body>
 
+# Artisan Connect: A Marketplace for Local Artists
+
 ## The Problem
 
 Local artists struggle to sell their work online. Existing platforms take high fees and are hard to use.
@@ -41,6 +43,6 @@ I built a simple, accessible marketplace where artists can showcase their work a
 
 > "Artisan Connect helped me reach customers I never could have found on my own. The platform is easy to use and the fees are fair." — *Local artist*
 
-[Back to Projects](/pages/projects/)
+[Back to Projects](/projects/)
 
 </div>
