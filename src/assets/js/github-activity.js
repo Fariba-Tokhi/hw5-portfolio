@@ -13,52 +13,7 @@ class GitHubActivity extends HTMLElement {
     this.maxRetries = 2;
 
     this.attachShadow({ mode: 'open' });
-
-    // Build template using DOM methods, not innerHTML
-    const template = document.createElement('template');
-    template.innerHTML = `
-      <style>
-        :host { display: block; border: 1px solid var(--color-border, #666); padding: 15px; margin: 10px 0; background: var(--color-card-bg, #f5f5f5); }
-        :host([state="loading"]) .content { opacity: 0.6; }
-        :host([state="error"]) .error { display: block; }
-        :host([state="success"]) .error { display: none; }
-        :host([state="idle"]) .idle-message { display: block; }
-        :host([state="idle"]) .content { display: none; }
-        :host([state="loading"]) .idle-message { display: none; }
-        :host([state="success"]) .idle-message { display: none; }
-        :host([state="error"]) .idle-message { display: none; }
-        .error { display: none; color: #c0392b; }
-        .idle-message { display: none; color: var(--color-text, #222); opacity: 0.7; }
-        .loading-text { display: none; }
-        :host([state="loading"]) .loading-text { display: block; }
-        ul { list-style: none; padding: 0; }
-        li { padding: 8px 0; border-bottom: 1px solid var(--color-border, #999); }
-        li:last-child { border-bottom: none; }
-        .event-type { font-weight: bold; }
-        .event-repo { font-size: 0.9em; opacity: 0.8; }
-        .event-time { font-size: 0.8em; opacity: 0.7; }
-        .retry-btn { margin-top: 10px; padding: 5px 15px; background: var(--color-accent, #333); color: var(--color-bg, #fff); border: none; cursor: pointer; }
-        .retry-btn:hover { opacity: 0.8; }
-        .fallback-content { display: block; }
-        :host([state="success"]) .fallback-content,
-        :host([state="loading"]) .fallback-content,
-        :host([state="idle"]) .fallback-content { display: none; }
-        .attribution { font-size: 0.8em; opacity: 0.6; margin-top: 10px; }
-      </style>
-      <div class="fallback-content"><slot></slot></div>
-      <div class="idle-message">Waiting to load GitHub activity...</div>
-      <div class="loading-text">Loading GitHub activity...</div>
-      <div class="error"><p><strong>⚠️ Could not load GitHub activity</strong></p><p class="error-message"></p><button class="retry-btn">Retry</button></div>
-      <div class="content"><ul class="activity-list"></ul><div class="attribution">Data from <a class="attribution-link" target="_blank" rel="noopener">GitHub</a></div></div>
-    `;
-
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-
-    this.listElement = this.shadowRoot.querySelector('.activity-list');
-    this.errorMessage = this.shadowRoot.querySelector('.error-message');
-    this.retryButton = this.shadowRoot.querySelector('.retry-btn');
-    this.fallbackSlot = this.shadowRoot.querySelector('.fallback-content slot');
-    this.attributionLink = this.shadowRoot.querySelector('.attribution-link');
+    this.shadowRoot.appendChild(this.buildTemplate());
     this.updateUsernameDisplay();
 
     if (this.retryButton) {
@@ -70,12 +25,101 @@ class GitHubActivity extends HTMLElement {
     this.cacheTTL = 5 * 60 * 1000;
   }
 
+  // Build the shadow DOM skeleton entirely with DOM APIs (createElement /
+  // textContent) rather than assigning an HTML markup string. Nothing here
+  // is remote or user data - it's the component's own static structure -
+  // but the component never assigns markup strings anywhere, so there's no
+  // unsafe-assignment API left in this file that a data value could
+  // accidentally be routed through later.
+  buildTemplate() {
+    const fragment = document.createDocumentFragment();
+
+    const style = document.createElement('style');
+    style.textContent = `
+      :host { display: block; border: 1px solid var(--color-border, #666); padding: 15px; margin: 10px 0; background: var(--color-card-bg, #f5f5f5); }
+      :host([state="loading"]) .content { opacity: 0.6; }
+      :host([state="error"]) .error { display: block; }
+      :host([state="success"]) .error { display: none; }
+      :host([state="idle"]) .idle-message { display: block; }
+      :host([state="idle"]) .content { display: none; }
+      :host([state="loading"]) .idle-message { display: none; }
+      :host([state="success"]) .idle-message { display: none; }
+      :host([state="error"]) .idle-message { display: none; }
+      .error { display: none; color: #c0392b; }
+      .idle-message { display: none; color: var(--color-text, #222); opacity: 0.7; }
+      .loading-text { display: none; }
+      :host([state="loading"]) .loading-text { display: block; }
+      ul { list-style: none; padding: 0; }
+      li { padding: 8px 0; border-bottom: 1px solid var(--color-border, #999); }
+      li:last-child { border-bottom: none; }
+      .event-type { font-weight: bold; }
+      .event-repo { font-size: 0.9em; opacity: 0.8; }
+      .event-time { font-size: 0.8em; opacity: 0.7; }
+      .retry-btn { margin-top: 10px; padding: 5px 15px; background: var(--color-accent, #333); color: var(--color-bg, #fff); border: none; cursor: pointer; }
+      .retry-btn:hover { opacity: 0.8; }
+      .fallback-content { display: block; }
+      :host([state="success"]) .fallback-content,
+      :host([state="loading"]) .fallback-content,
+      :host([state="idle"]) .fallback-content { display: none; }
+      .attribution { font-size: 0.8em; opacity: 0.6; margin-top: 10px; }
+    `;
+    fragment.appendChild(style);
+
+    const fallback = document.createElement('div');
+    fallback.className = 'fallback-content';
+    this.fallbackSlot = document.createElement('slot');
+    fallback.appendChild(this.fallbackSlot);
+    fragment.appendChild(fallback);
+
+    const idle = document.createElement('div');
+    idle.className = 'idle-message';
+    idle.textContent = 'Waiting to load GitHub activity...';
+    fragment.appendChild(idle);
+
+    const loading = document.createElement('div');
+    loading.className = 'loading-text';
+    loading.textContent = 'Loading GitHub activity...';
+    fragment.appendChild(loading);
+
+    const error = document.createElement('div');
+    error.className = 'error';
+    const errorHeading = document.createElement('p');
+    const errorStrong = document.createElement('strong');
+    errorStrong.textContent = '⚠️ Could not load GitHub activity';
+    errorHeading.appendChild(errorStrong);
+    this.errorMessage = document.createElement('p');
+    this.errorMessage.className = 'error-message';
+    this.retryButton = document.createElement('button');
+    this.retryButton.type = 'button';
+    this.retryButton.className = 'retry-btn';
+    this.retryButton.textContent = 'Retry';
+    error.append(errorHeading, this.errorMessage, this.retryButton);
+    fragment.appendChild(error);
+
+    const content = document.createElement('div');
+    content.className = 'content';
+    this.listElement = document.createElement('ul');
+    this.listElement.className = 'activity-list';
+    const attribution = document.createElement('div');
+    attribution.className = 'attribution';
+    attribution.append('Data from ');
+    this.attributionLink = document.createElement('a');
+    this.attributionLink.className = 'attribution-link';
+    this.attributionLink.target = '_blank';
+    this.attributionLink.rel = 'noopener';
+    this.attributionLink.textContent = 'GitHub';
+    attribution.appendChild(this.attributionLink);
+    content.append(this.listElement, attribution);
+    fragment.appendChild(content);
+
+    return fragment;
+  }
+
   updateUsernameDisplay() {
     if (this.fallbackSlot) {
       this.fallbackSlot.textContent = `GitHub activity for ${this.username}`;
     }
     if (this.attributionLink) {
-      this.attributionLink.textContent = 'GitHub';
       this.attributionLink.href = `https://github.com/${encodeURIComponent(this.username)}`;
     }
   }
