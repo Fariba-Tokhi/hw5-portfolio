@@ -1,7 +1,7 @@
 ---
 layout: layout.njk
 title: "GreenFootprint Case Study"
-description: "Case study of GreenFootprint - A carbon tracking web app"
+description: "Case study of GreenFootprint -  A carbon tracking web app"
 projectTitle: "GreenFootprint"
 subtitle: "A carbon tracking web app that makes sustainability engaging and accessible"
 timeline: "8 weeks | Solo project"
