@@ -5,8 +5,15 @@
     (function() {
       try {
         const theme = localStorage.getItem('theme-preference');
-        if (theme === 'light' || theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.setAttribute('data-theme-state', 'light');
+        } else if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.setAttribute('data-theme-state', 'dark');
+        } else {
+          // system default
+          document.documentElement.setAttribute('data-theme-state', 'system');
         }
       } catch (_) {}
     })();
